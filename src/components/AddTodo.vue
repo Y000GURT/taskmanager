@@ -1,7 +1,7 @@
 <template>
     <div class="content">
-        <input v-model="title" type="text" class="content__title" placeholder="Название задачи">
-        <textarea v-model="desc" type="text" class="content__desc" placeholder="Описание" :rows="descRows"> </textarea>
+        <MyTextArea v-model="title" :rows="1" class="content__title" placeholder="Название задачи"></MyTextArea>
+        <MyTextArea v-model="desc" :rows="1" class="content__desc" placeholder="Описание"></MyTextArea>
 
         <hr class="content__line">
 
@@ -18,54 +18,48 @@
 
 <script setup lang="ts">
 
-import { defineEmits, onMounted, watch } from 'vue'
+import MyTextArea from './UI/MyTextArea.vue'
+import { defineEmits } from 'vue'
 import { defineProps } from 'vue'
 import { ref } from 'vue'
 import { useStore } from 'vuex';
 
 const props = defineProps<{
-    id?: number,
+    id?: string,
     title?: string,
     desc?: string,
     isEdit?: boolean,
+    date: string,
 }>()
 
 const store = useStore()
 const title = ref(props.title)
 const desc = ref(props.desc)
-const descRows = ref(1)
 
 function addEditTodo() {
-    if (title.value !== '') {
+    if (title.value != undefined) {
         if (props.isEdit) {
-            store.commit('editTodo', {
+            store.dispatch('editTodo', {
                 id: props.id,
                 title: title.value,
-                desc: desc.value,
+                desc: desc.value
             })
             emit('closeAddTodo', false)
         }
         else {
-            store.commit('addTodo', {
-                id: Date.now(),
+            const date = new Date(props.date)
+            store.dispatch('addTodo', {
                 title: title.value,
                 desc: desc.value,
+                flag: 0,
+                datetime: new Date(date.setHours(date.getHours() + 1)).toISOString(),
+                done: false
             })
-            title.value = ''
-            desc.value = ''
+            emit('closeAddTodo', false)
         }
     }
 }
-onMounted(() => {
-    if (desc.value) {
-        descRows.value = Math.ceil((desc.value?.length |  1 ) / 30)
-    }
-})
-watch(desc, () => {
-    if (desc.value) {
-        descRows.value = Math.ceil((desc.value?.length |  1 ) / 30)
-    }
-})
+
 const emit = defineEmits<{
   closeAddTodo: [visible: boolean]
 }>()
@@ -79,7 +73,7 @@ const emit = defineEmits<{
     border: solid 1px rgb(199, 199, 199);
     border-radius: 10px;
     padding: 10px;
-    margin-top: 20px;
+    margin-top: 25px;
 
     display: flex;
     flex-direction: column;
@@ -93,18 +87,16 @@ input, textarea {
     overflow: hidden;
     overflow-wrap: break-word;
 }
-.content > input {
-    font-weight: bold;
-}
-.content > textarea {
-    margin-top: 10px;
-}
 .content__title {
     font-size: 15px;
+    font-weight: bold;
 }
 .content__title::placeholder {
     font-weight: bold;
     font-size: 15px;
+}
+.content__desc {
+    margin-top: 10px;
 }
 .content__line {
     height: 1px;

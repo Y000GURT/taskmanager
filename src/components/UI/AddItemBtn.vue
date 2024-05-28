@@ -10,11 +10,12 @@
 
 <style scoped>
 .add-item {
-  margin-top: 20px;
+  margin-top: 30px;
   font-weight: bold;
   height: 30px;
   width: 150px;
-  background-color: rgb(147, 208, 255);
+  color: #313131;
+  background-color: rgb(175, 221, 255);
   border-radius: 15px;
   align-self: center;
   transition: all 0.4s ease;

@@ -1,113 +1,178 @@
 import { createStore } from 'vuex'
+import authModule from './auth/index'
 
-const todos = [{
-  id: 1,
-  title: 'Сходить за хлебом',
-  desc: 'В магазин Магнит, около дома который',
-  flag: 0
-},
-{
-  id: 2,
-  title: 'Сняться в фильме вместо Уилла Смита',
-  desc: 'Сказали, он потерял форму и нужен кто-то спортивный',
-  flag: 3
-},
-{
-  id: 3,
-  title: 'Написать сценарий для фильма "Пельмени переходят в атаку"',
-  desc: 'Заплатят 1к рублей',
-  flag: 1
-},
-{
-  id: 4,
-  title: 'Полететь на Марс',
-  desc: 'Илон сказал, что я ему нужен',
-  flag: 0
-},
-{
-  id: 5,
-  title: 'Приласкать котенка',
-  desc: 'Какой же день без котиков',
-  flag: 2
-},
-]
 interface Todo {
-  id: number,
+  id: string,
   title: string,
   desc: string,
   flag: number,
+  datetime: string
+  done: boolean,
 }
 
 interface State {
   todos: Todo[],
   doneTodos: Todo[],
-  futureTodos: Todo[],
 }
 
 export default createStore({
+  modules: {
+    auth: authModule,
+  },
   state: (): State => ( {
-    todos: todos,
+    todos: [],
     doneTodos: [],
-    futureTodos: [],
   }),
   getters: {
+    notDoneTodos(state: State) {
+      return state.todos.filter((todo: Todo) => !todo.done)
+    },
+    overdueTodos(state: State) {
+      return state.todos.filter((todo: Todo) => (new Date(todo.datetime) < new Date(Date.now()) && !todo.done))
+    },
+    doneTodos(state: State) {
+      return state.doneTodos
+    },
   },
   mutations: {
-    addTodo(state: State, todo: Todo) {
-      state.todos.push(todo)
+    setTodos(state: State, todos: Todo[]) {
+      state.todos = todos
     },
-    addDoneTodo(state: State, todo: Todo) {
-      state.doneTodos.push(todo)
+    setDoneTodos(state: State, doneTodos: Todo[]) {
+      state.doneTodos = doneTodos
     },
-    deleteTodo(state: State, id: number) {
-      state.todos = state.todos.filter(item => item.id !== id)
-    },
-    deleteDoneTodo(state: State, id: number) {
-      state.doneTodos = state.doneTodos.filter(item => item.id !== id)
-    },
-    editTodo(state: State, todo: Todo) {
-      state.todos = state.todos.map(item => {
-        if (item.id === todo.id) {
-          item.title = todo.title
-          item.desc = todo.desc
-        }
-        return item
-      })
-    },
-    editDoneTodo(state: State, todo: Todo) {
-      state.doneTodos = state.doneTodos.map(item => {
-        if (item.id === todo.id) {
-          item.title = todo.title
-          item.desc = todo.desc
-        }
-        return item
-      })
-    },
-    changeFlagTodo(state: State, { id, flag }) {
-      state.todos = state.todos.map(item => {
-        if (item.id === id) {
-          item.flag = flag
-        }
-        return item
-      })
-    },
-    changeFlagDoneTodo(state: State, { id, flag }) {
-      state.doneTodos = state.doneTodos.map(item => {
-        if (item.id === id) {
-          item.flag = flag
-        }
-        return item
-      })
-    },
-    sortedTodos(state: State) {
-      state.todos = state.todos.sort((todo1, todo2) => todo2.flag - todo1.flag)
-    },
-    sortedDoneTodos(state: State) {
-      state.doneTodos = state.todos.sort((todo1, todo2) => todo2.flag - todo1.flag)
-    }
   },
   actions: {
-  },
-  modules: {
+    async getDoneTodos(context: any) {
+      const userId = context.getters.userId
+
+      const response = await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`)
+
+      const responseData = await response.json()
+      const todos = []
+
+      for (const key in responseData) {
+        if(responseData[key].done) {
+          const todo = {
+            id: key,
+            ...responseData[key]
+          }
+          todos.push(todo)
+        }
+      }
+      context.commit('setDoneTodos', todos)
+    },
+    async getTodos(context: any) { 
+      const userId = context.getters.userId
+
+      const response = await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`)
+
+      const responseData = await response.json()
+
+      if (!response.ok) {
+          const error = new Error(`${responseData.error.code}: ${responseData.error.message}`)
+          throw error
+      }
+      const todos = []
+
+      for (const key in responseData) {
+        const todo = {
+            id: key,
+            ...responseData[key]
+        }
+        todos.push(todo)
+      }
+      context.commit('setTodos', todos)
+    },
+    async addTodo(context: any, payload: any) {
+      const userId = context.getters.userId
+
+      const todo = {
+        title: payload.title,
+        desc: payload.desc ? payload.desc : '',
+        flag: payload.flag,
+        datetime: payload.datetime,
+        done: payload.done
+      }
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`, {
+        method: 'POST',
+        body: JSON.stringify(todo)
+      })
+
+      context.dispatch('getTodos')
+    },
+    async editTodo(context: any, todo: Todo) {
+      const userId = context.getters.userId
+      const currentTodo = context.state.todos.find((item: Todo) => item.id === todo.id)
+
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos/${todo.id}.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: todo.title,
+          desc: todo.desc ? todo.desc : '',
+          flag: currentTodo.flag,
+          datetime: currentTodo.datetime,
+          done: currentTodo.done,
+        })
+      })
+
+      context.dispatch('getTodos')
+    },
+    async setFlag(context: any, todo: Todo) {
+      const userId = context.getters.userId
+      const currentTodo = context.state.todos.find((item: Todo) => item.id === todo.id)
+
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos/${todo.id}.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: currentTodo.title,
+          desc: currentTodo.desc,
+          flag: todo.flag,
+          datetime: currentTodo.datetime,
+          done: currentTodo.done,
+        })
+      })
+      context.dispatch('getTodos')
+    },
+    async setDatetime(context: any, todo: Todo) {
+      const userId = context.getters.userId
+      const currentTodo = context.state.todos.find((item: Todo) => item.id === todo.id)
+
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos/${todo.id}.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: currentTodo.title,
+          desc: currentTodo.desc,
+          flag: currentTodo.flag,
+          datetime: todo.datetime,
+          done: currentTodo.done,
+        })
+      })
+      context.dispatch('getTodos')
+    },
+    async setDoneTodo(context: any, todo: Todo) {
+      const userId = context.getters.userId
+
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos/${todo.id}.json`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: todo.title,
+          desc: todo.desc,
+          flag: todo.flag,
+          datetime: todo.datetime,
+          done: true,
+        })
+      })
+
+      context.dispatch('getTodos')
+    },
+    async deleteTodo(context: any, todoId: string) {
+      const userId = context.getters.userId
+
+      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos/${todoId}.json`, {
+        method: 'DELETE'
+      })
+      context.dispatch('getTodos')
+    },
   }
 })

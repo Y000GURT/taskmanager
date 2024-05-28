@@ -7,31 +7,36 @@
         <div class="todo-item__main">
           <p class="todo-item__name">{{ props.todo.title }}</p>
           <p class="todo-item__desc">{{ props.todo.desc }}</p>
-        </div>
 
-        <button class="todo-item__more" @click="visibilitySettings" ref="button" v-if="!props.isArchive">
+          <div class="todo-item__time" v-if="time !== ''">
+            <img src="@/img/clock.png" alt="">
+            <p>{{ time }}</p>
+          </div>
+        </div>
+        <button class="todo-item__more" @click="openSettings" ref="button" v-if="!props.isArchive">
           <img src="@/img/more.png" alt="">
         </button>
     </div>
 
-    <AddTodo v-else @closeAddTodo="closeAddTodo" :id="props.todo.id" :title="props.todo.title" :desc="props.todo.desc" :isEdit="true"></AddTodo>
-    <TodoSettings @editTodo="editTodo" @closeSettings="closeSettings" ref="todoSettings" v-show="isVisibleSettings" :visibilitySettings="visibilitySettings" :todo="props.todo"></TodoSettings>
+    <AddTodo v-else @closeAddTodo="closeAddTodo" :date="new Date().toISOString()" :id="props.todo.id" :title="props.todo.title" :desc="props.todo.desc" :isEdit="true"></AddTodo>
+    <TodoSettings v-if="isVisibleSettings" ref="todoSettings" @editTodo="editTodo" :buttonCoord="getButtonCoord()" @closeSettings="closeSettings" :todo="props.todo"></TodoSettings>
 
 </template>
 
 <script setup lang="ts">
 
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import TodoSettings from './TodoSettings.vue'
 import { defineProps } from 'vue'
 import AddTodo from './AddTodo.vue'
 import store from '@/store';
 
 interface Todo {
-  id: number,
+  id: string,
   title: string,
   desc: string,
   flag: number,
+  datetime: string
 }
 interface Props {
   todo: Todo,
@@ -42,38 +47,39 @@ const props = defineProps<Props>()
 const isEditing = ref(false)
 const isVisibleSettings = ref(false)
 const button = ref<HTMLElement | null>(null)
-const todoSettings = ref<InstanceType<typeof TodoSettings> | null>(null)
 
-function visibilitySettings() {
-  isVisibleSettings.value = !isVisibleSettings.value
-
-  if (isVisibleSettings.value) {
-    if (button.value && todoSettings.value && isVisibleSettings.value) {
-      const buttonCoord = button.value.getBoundingClientRect()
-      todoSettings.value.onRight(buttonCoord.right, buttonCoord.top)
-    }
-  }
+function openSettings() {
+  isVisibleSettings.value = true
 }
-
 function closeSettings() {
-  isVisibleSettings.value = false;
+  isVisibleSettings.value = false
 }
 function editTodo(isEdit: boolean) {
   isEditing.value = isEdit
   isVisibleSettings.value = false
 }
-
 function closeAddTodo() {
   isEditing.value = false
 }
 
+const time = computed(() => {
+  if (props.todo.datetime) {
+    const date = new Date(props.todo.datetime)
+    return ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2)
+  } else {
+    return ''
+  }
+})
 function doneTodo() {
   if (props.isArchive) {
-    store.commit('deleteDoneTodo', props.todo.id)
+    store.dispatch('deleteTodo', props.todo.id)
+    store.dispatch('getDoneTodos')
   } else {
-    store.commit('addDoneTodo', props.todo)
-    store.commit('deleteTodo', props.todo.id)
+    store.dispatch('setDoneTodo', props.todo)
   }
+}
+function getButtonCoord() {
+  return button.value?.getBoundingClientRect()
 }
 </script>
 
@@ -91,18 +97,20 @@ function doneTodo() {
   border: solid 1px rgb(224, 224, 224);
   border-radius: 10px;
   transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0px 0px 4px rgba(182, 182, 182, 0.345);
 
   display: flex;
   align-items: flex-start;
-  /* justify-content: space-between; */
 }
 .todo-item:hover {
-  box-shadow: 0px 0px 10px 0px rgba(182, 182, 182, 0.345);
+  box-shadow: 0px 0px 8px rgba(182, 182, 182, 0.527);
+  border: solid 1px rgb(204, 204, 204);
 }
 .todo-item__check {
   border: solid 2px rgb(182, 182, 182);
   border-radius: 50%;
-  transition: all 0.4s ease;
+  transition: all 0.3s ease;
 
   display: flex;
   align-items: center;
@@ -111,13 +119,16 @@ function doneTodo() {
   transform: scale(115%);
 }
 .todo-item__check-red {
-  border: solid 2px rgb(255, 46, 46);
+  border: solid 2px rgb(255, 60, 60);
+  background-color: rgb(255, 170, 170);
 }
 .todo-item__check-orange {
   border: solid 2px rgb(255, 133, 46);
+  background-color: rgb(255, 184, 133);
 }
 .todo-item__check-blue {
   border: solid 2px rgb(46, 150, 255);
+  background-color: rgb(137, 196, 255);
 }
 .todo-item__check > img {
   height: 15px;
@@ -134,12 +145,27 @@ function doneTodo() {
 .todo-item__name {
   word-wrap: break-word;
   line-height: 14px;
+  font-size: 17px;
 }
 .todo-item__desc {
   word-wrap: break-word;
+  color: #565656;
   line-height: 12px;
+  font-size: 14px;
+  margin-top: 7px;
+}
+.todo-item__time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 15px;
+}
+.todo-item__time > img {
+  height: 15px;
+}
+.todo-item__time > p {
   font-size: 13px;
-  margin-top: 5px;
 }
 .todo-item__more {
   transition: all 0.3s ease;
