@@ -188,7 +188,8 @@ function findError(str: string) {
   height: 100%;
   width: 100%;
   background-color: rgb(244, 250, 255);
-
+  padding: 10px;
+  
   display: flex;
   flex-direction: column;
   align-items: center;
