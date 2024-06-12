@@ -63,26 +63,31 @@ export default createStore({
       context.commit('setDoneTodos', todos)
     },
     async getTodos(context: any) { 
-      const userId = context.getters.userId
+      try {
+        const userId = context.getters.userId
 
-      const response = await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`)
-
-      const responseData = await response.json()
-
-      if (!response.ok) {
-          const error = new Error(`${responseData.error.code}: ${responseData.error.message}`)
-          throw error
-      }
-      const todos = []
-
-      for (const key in responseData) {
-        const todo = {
-            id: key,
-            ...responseData[key]
+        const response = await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`)
+  
+        const responseData = await response.json()
+  
+        if (!response.ok) {
+            const error = new Error(`${responseData.error.code}: ${responseData.error.message}`)
+            throw error
         }
-        todos.push(todo)
+        const todos = []
+  
+        for (const key in responseData) {
+          const todo = {
+              id: key,
+              ...responseData[key]
+          }
+          todos.push(todo)
+        }
+        context.commit('setTodos', todos)
       }
-      context.commit('setTodos', todos)
+      catch (error) {
+        alert(error)
+      }
     },
     async addTodo(context: any, payload: any) {
       const userId = context.getters.userId

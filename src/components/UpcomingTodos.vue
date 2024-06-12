@@ -98,6 +98,36 @@ onMounted( () => {
     getDates(nowDate.value)
     primordialDates.value = dates.value
 })
+onMounted(() => {
+    let isMouseDown = false;
+    let startX:any, scrollLeft:any;
+
+    if (todos.value) {
+        todos.value.addEventListener('mousedown', (event) => {
+            isMouseDown = true;
+            todos.value!.style.cursor = 'grabbing'
+            startX = event.pageX - todos.value!.offsetLeft;
+            scrollLeft = todos.value!.scrollLeft;
+        });
+
+        todos.value.addEventListener('mousemove', (event) => {
+            if (!isMouseDown) return;
+            event.preventDefault();
+            const x = event.pageX - todos.value!.offsetLeft;
+            const scroll = (x - startX) * 1;
+            todos.value!.scrollLeft = scrollLeft - scroll;
+        });
+
+        todos.value.addEventListener('mouseup', () => {
+            isMouseDown = false;
+            todos.value!.style.cursor = 'grab'
+        });
+
+        todos.value.addEventListener('mouseleave', () => {
+            isMouseDown = false;
+        });
+    }
+})
 onBeforeMount(() => {
   try {
     store.dispatch('getTodos')
@@ -132,16 +162,17 @@ function closeSidebar() {
     align-items: flex-start;
     gap: 30px;
 
-    height: 100%;
+    height: 97%;
     width: auto;
     max-width: calc(100vw - 320px);
     overflow: auto;
+    cursor: grab;
 }
 .todos::-webkit-scrollbar {
-    height: 8px;
+    height: 6px;
 }
 .todos::-webkit-scrollbar-thumb {
-    background-color: #cecece; 
+    background-color: #d0d0d0; 
     border-radius: 5px; 
 }
 

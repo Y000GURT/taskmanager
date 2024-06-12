@@ -111,4 +111,10 @@ onBeforeMount(() => {
     transform: translateY(0) scale(1);
   }
 }
+
+@media (max-width:1025px) { 
+  .todos {
+    max-width: 100%;
+  }
+}
 </style>

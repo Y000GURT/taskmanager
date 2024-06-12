@@ -10,11 +10,11 @@
 
             <div class="settings">
                 <component 
-                :is="settingsComponent" 
-                @change-email="changeEmail" 
-                @change-password="changePassword"
-                @cansel="allSettings">
-            </component>
+                    :is="settingsComponent" 
+                    @change-email="changeEmail" 
+                    @change-password="changePassword"
+                    @cansel="allSettings">
+                </component>
             </div>
         </div>
     </div>

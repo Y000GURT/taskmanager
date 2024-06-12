@@ -74,40 +74,46 @@ export default {
     },
     actions: {
         async signup(context: any, payload: User) {
-            const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAMWZ8UyOXWzN6t_isBVCWJuStz4AV4aJY', {
-                method: 'POST',
-                body: JSON.stringify({
-                    email: payload.email,
-                    password: payload.password,
-                    returnSecureToken: true,
+            try {
+                const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAMWZ8UyOXWzN6t_isBVCWJuStz4AV4aJY', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: payload.email,
+                        password: payload.password,
+                        returnSecureToken: true,
+                    })
                 })
-            })
+    
+                const responseData = await response.json()
+    
+                if (!response.ok) {
+                    const error = new Error(`${responseData.error.code}: ${responseData.error.message}`)
+                    throw error
+                }
 
-            const responseData = await response.json()
-
-            if (!response.ok) {
-                const error = new Error(`${responseData.error.code}: ${responseData.error.message}`)
-                throw error
+                context.commit('setUser', {
+                    token: responseData.idToken,
+                    userId: responseData.localId,
+                    email: responseData.email,
+                    firstName: payload.firstName,
+                    lastName: payload.lastName,
+                    refreshToken: payload.refreshToken,
+                });
+    
+                context.dispatch('addUser', {
+                    firstName: payload.firstName,
+                    lastName: payload.lastName
+                })
+    
+                context.dispatch('saveUserData')
             }
-
-            context.commit('setUser', {
-                token: responseData.idToken,
-                userId: responseData.localId,
-                email: responseData.email,
-                firstName: payload.firstName,
-                lastName: payload.lastName,
-                refreshToken: payload.refreshToken,
-            });
-
-            context.dispatch('addUser', {
-                firstName: payload.firstName,
-                lastName: payload.lastName
-            })
-
-            context.dispatch('saveUserData')
+            catch (error) {
+                alert(error)
+            }
         },
         async login(context: any, payload: User) {
-            const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAMWZ8UyOXWzN6t_isBVCWJuStz4AV4aJY', {
+            try {
+                const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAMWZ8UyOXWzN6t_isBVCWJuStz4AV4aJY', {
                 method: 'POST',
                 body: JSON.stringify({
                     email: payload.email,
@@ -131,7 +137,6 @@ export default {
             timer = setTimeout(function() {
                 context.dispatch('autoLogout');
             }, expiresIn);
-          
 
             await context.dispatch('setUserOnLogin', {
                 token: responseData.idToken,
@@ -141,6 +146,11 @@ export default {
             })
             
             context.dispatch('saveUserData')
+            }
+
+            catch (error) {
+                alert(error)
+            }
         },
         saveUserData(context: any) {
             localStorage.setItem('firstName', context.state.firstName)
@@ -265,8 +275,6 @@ export default {
                     throw error
                 }
             }
-
-
         },
         async setUserOnLogin(context: any, payload: User) {
 
@@ -321,8 +329,6 @@ export default {
             catch (error) {
                 alert(error)
             }
-            
-
         },
         async changePassword(context: any, password: string) {
             try {

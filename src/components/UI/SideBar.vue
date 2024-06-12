@@ -49,7 +49,6 @@
                 <img src="@/img/calendar.png" alt="">
                 <p>Предстоящие</p>
             </router-link>
-
         </nav>
 
     </div>
