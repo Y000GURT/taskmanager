@@ -67,6 +67,9 @@ const emit = defineEmits<{
 </script>
 
 <style scoped>
+.content:first-child {
+  margin-top: 0px;
+}
 .content {
     height: auto;
     width: 300px;

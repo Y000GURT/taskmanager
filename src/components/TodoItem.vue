@@ -88,7 +88,7 @@ function getButtonCoord() {
   font-weight: bold;
 }
 .todo-item:not(:first-child) {
-  margin-top: 20px;
+  margin-top: 25px;
 }
 .todo-item {
   padding: 10px;

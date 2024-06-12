@@ -46,10 +46,10 @@ onMounted(() => {
 
 <style scoped>
 .main {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  transition: all 0.4s ease;
+    display: flex;
+    height: 100%;
+    width: 100vw;
+    transition: all 0.4s ease;
 }
 .todo-list {
     width: 100%;
@@ -68,7 +68,7 @@ onMounted(() => {
     overflow: auto;
 }
 .todos::-webkit-scrollbar {
-    height: 8px;
+    width: 5px;
 }
 .todos::-webkit-scrollbar-thumb {
     background-color: #cecece; 
@@ -98,6 +98,22 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width:1025px) { 
+  .todos {
+    max-width: 100%;
+  }
+  .main {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    transition: all 0.4s ease;
+    transform: translate(-280px, 0);
+  }
+  .main-left {
+    transform: translate(0px, 0);
   }
 }
 </style>

@@ -7,7 +7,7 @@
 
     <SideBar @open-modal="openModal" :isVisible="isVisibleSidebar" page="today" @close="closeSidebar"/>
 
-    <div class="todo-list">
+    <div class="todo-list" :class="{'todo-list-left' : !isVisibleSidebar}">
       <header>
         <h2>Сегодня</h2>
       </header>
@@ -73,12 +73,12 @@ onBeforeMount(() => {
   gap: 30px;
 
   height: 100%;
-  width: auto;
-  max-width: calc(100vw - 280px);
-  overflow: auto;
+  width: 100%;
+  /* max-width: calc(100vw - 280px); */
+  /* overflow: auto; */
 }
 .todos::-webkit-scrollbar {
-  height: 8px;
+  width: 5px;
 }
 .todos::-webkit-scrollbar-thumb {
   background-color: #cecece; 
@@ -89,6 +89,7 @@ onBeforeMount(() => {
   background-color: none; 
 }
 .main-left {
+  width: calc(100% + 280px);
   transform: translate(-280px, 0);
 }
 
@@ -115,6 +116,14 @@ onBeforeMount(() => {
 @media (max-width:1025px) { 
   .todos {
     max-width: 100%;
+  }
+  .main {
+    width: calc(100% + 280px);
+    transform: translate(-280px, 0);
+    overflow-x: scroll;
+  }
+  .main-left {
+    transform: translate(0px, 0);
   }
 }
 </style>

@@ -45,10 +45,11 @@ function allSettings() {
 <style scoped>
 .wrapper {
     height: 100%;
-    width: 100%;
+    width: 100vw;
     position: absolute;
     left: 0;
     top: 0;
+    padding: 10px;
     background-color: rgba(41, 41, 41, 0.625);
 
     display: flex;

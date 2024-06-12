@@ -134,7 +134,7 @@ const emit = defineEmits<{
     left: 0;
     top: 0;
     height: 100%;
-    width: 100%;
+    width: calc(100% + 280px);
 }
 .settings {
     height: auto;

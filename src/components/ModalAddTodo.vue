@@ -76,9 +76,10 @@ function addTodo() {
 <style scoped>
 .wrapper {
     height: 60%;
-    width: 100%;
+    width: 100vw;
     z-index: 10;
     position: absolute;
+    padding: 10px;
 
     display: flex;
     justify-content: center;

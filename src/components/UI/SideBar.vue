@@ -1,5 +1,5 @@
 <template>
-    <div class="sidebar" >
+    <div class="sidebar" :class="{'sidebar-off' : !isVisible}">
 
         <div class="sidebar__header">
             <div class="sidebar__name" @click="openSettings" ref="header">
@@ -120,17 +120,12 @@ onUnmounted(() => {
     background-color: rgb(223, 240, 255);
     font-size: 15px;
     transition: all 0.4s ease;
-    
+
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
-.sidebar-off {
-    transform: translate(-280px, 0);
-}
-.sidebar__toggle-off {
-    transform: translate(60px, 0);
-}
+
 .sidebar__header {
     display: flex;
     justify-content: space-between;
@@ -168,6 +163,9 @@ onUnmounted(() => {
     cursor: pointer;
     position: relative;
     transition: all 0.3s ease;
+}
+.sidebar__toggle-off {
+    transform: translate(60px, 0);
 }
 .sidebar__toggle:hover {
     background-color: rgb(199, 228, 255);
@@ -332,4 +330,12 @@ onUnmounted(() => {
     transform: scale(1.3);
 }
 
+@media (max-width:1025px) { 
+    .sidebar__toggle {
+        transform: translate(60px, 0);
+    }
+    .sidebar__toggle-off {
+        transform: translate(0, 0);
+    }
+}
 </style>
