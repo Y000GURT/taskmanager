@@ -166,7 +166,7 @@ function closeSidebar() {
     width: auto;
     max-width: calc(100vw - 320px);
     overflow-x: scroll;
-    cursor: grab;
+    cursor: pointer;
 }
 .todos::-webkit-scrollbar {
     height: 6px;

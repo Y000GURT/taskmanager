@@ -99,10 +99,16 @@ export default createStore({
         datetime: payload.datetime,
         done: payload.done
       }
-      await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`, {
-        method: 'POST',
-        body: JSON.stringify(todo)
-      })
+
+      try {
+        await fetch(`https://todo-f6773-default-rtdb.europe-west1.firebasedatabase.app/users/${userId}/todos.json`, {
+          method: 'POST',
+          body: JSON.stringify(todo)
+        })
+      }
+      catch(error) {
+        alert(error)
+      }
 
       context.dispatch('getTodos')
     },
